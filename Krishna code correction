@@ -1,0 +1,43 @@
+#include "mbed.h"
+
+// DigitalOut object for LED control
+DigitalOut myled(LED1);
+
+// Serial objects for communication
+Serial pc(USBTX, USBRX); // Swapped parameters to match the correct order (TX, RX)
+Serial dev(p9, p10);
+
+// Function to handle data received from the device
+void dev_recv() {
+    while(dev.readable()) {
+        pc.putc(dev.getc());
+    }
+}
+
+// Function to handle data received from the PC
+void pc_recv() {
+    while(pc.readable()) {
+        dev.putc(pc.getc());
+    }
+}
+
+int main() {
+    // Set baud rates for serial communication
+    pc.baud(9600);
+    dev.baud(115200); // Corrected 'device1' to 'dev'
+
+    // Attach interrupt functions for serial communication
+    pc.attach(&pc_recv);
+    dev.attach(&dev_recv); // Corrected 'atach' to 'attach' and fixed the parameter to 'dev_recv'
+
+    // Print a welcome message to the PC serial terminal
+    pc.printf("Hello!! \r\n");
+
+    // Main loop to blink the LED
+    while(1) {
+        myled = 1;
+        wait(1); // Wait for 1 second
+        myled = 0;
+        wait(1); // Wait for 1 second
+    }
+}
